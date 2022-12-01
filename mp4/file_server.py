@@ -7,6 +7,8 @@ import time
 import struct
 import json
 
+import torch
+
 
 BUFFER_SIZE = 4096
 MASTER_HOST = INTRODUCER_HOST = socket.gethostbyname('fa22-cs425-8801.cs.illinois.edu')
@@ -20,7 +22,16 @@ MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
 
-ML_DATA_PORT
+ML_PORT = 10088
+
+##########################################################
+# Model Loading Code
+##########################################################
+def load_alexnet():
+    print('loading alexnet')
+
+def load_resnet():
+    print('loading resnet')
 
 def send_file(conn: socket.socket, localfilepath, sdfsfileid, timestamp):
     header_dic = {
@@ -190,7 +201,10 @@ class FServer(server.Node):
             ips = json.loads(s.recv(4096).decode())
             return ips
 
-    # utilities
+    ###################################################
+    # ALL FILESERVER FUNCTONS
+    ###################################################
+
     def filehash(self, sdfsfilename):
         self.membership_lock.acquire()
         index = hash(sdfsfilename) % len(self.membership_list)
@@ -434,6 +448,11 @@ class FServer(server.Node):
         conn.send(header_bytes)
         conn.send(data)
 
+    ###################################################
+    # We write all ML functions here
+
+    ###################################################
+
     def run(self):
         self.join()
         t1 = threading.Thread(target=self.fileServerBackground)
@@ -443,7 +462,25 @@ class FServer(server.Node):
             command = input('>')
             parsed_command = command.split()
             start_time = time.time()
-            if parsed_command[0] == 'put':
+            if len(parsed_command) == 0:
+                continue
+
+            #############################################################
+            ##### AI Commands
+            #############################################################
+            elif parsed_command[0] == 'set_batch_size':
+                model_to_change = parsed_command[1]
+                new_batch_size = parsed_command[2]
+                # Must send this info to the coordinator so it can change batch size
+
+            elif parsed_command[0] == 'run_job':
+                model_to_run = parsed_command[1]
+                # tell the coordinator to run the job
+
+            #############################################################
+            ##### File Commands
+            #############################################################
+            elif parsed_command[0] == 'put':
                 localfilepath, sdfsfileid = parsed_command[1], parsed_command[2]
                 ips = self.get_ip(sdfsfileid)
                 if not ips:
@@ -533,6 +570,9 @@ class FServer(server.Node):
                         f.write(data)
                     print('get complete.')
 
+            #############################################################
+            ##### Normal Commands
+            #############################################################
             elif command == 'leave':
                 # create command id
                 self.command_lock.acquire()
@@ -585,7 +625,7 @@ class FServer(server.Node):
             else:
                 print('command not found!')
             end_time = time.time()
-            print('time consumed: ', end_time - start_time)
+            print('Time Consumed: ', end_time - start_time)
 
 
 
