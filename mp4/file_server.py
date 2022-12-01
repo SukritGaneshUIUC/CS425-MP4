@@ -9,7 +9,7 @@ import json
 
 
 BUFFER_SIZE = 4096
-MASTER_HOST = INTRODUCER_HOST = socket.gethostbyname('fa22-cs425-8601.cs.illinois.edu')
+MASTER_HOST = INTRODUCER_HOST = socket.gethostbyname('fa22-cs425-8801.cs.illinois.edu')
 MACHINE_NUM = int(socket.gethostname()[13:15])
 LOG_FILEPATH = f'machine.{MACHINE_NUM}.log'
 PING_PORT = 20240
@@ -453,6 +453,7 @@ class FServer(server.Node):
                     t.start()
                 i = 0
                 command_id = sdfsfileid + '-' + str(timestamp)
+                print('hellothere')
                 while i < 100:
                     self.put_lock.acquire()
                     self.put_ack_cache.setdefault(command_id, 0)
