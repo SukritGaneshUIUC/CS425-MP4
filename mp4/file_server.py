@@ -20,6 +20,8 @@ MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
 
+ML_DATA_PORT
+
 def send_file(conn: socket.socket, localfilepath, sdfsfileid, timestamp):
     header_dic = {
         'sdfsfileid': sdfsfileid,  # 1.txt
@@ -179,9 +181,6 @@ class FServer(server.Node):
         self.master_ip = socket.gethostbyname(master_host)
 
     def get_ip(self, sdfsfileid):
-        print('hey there')
-        print(sdfsfileid)
-        print('goodbye')
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
                 s.connect((self.master_ip, GET_ADDR_PORT))
