@@ -28,6 +28,11 @@ alexnet.eval()
 
 output = alexnet(batch_img)
 
+mystr = np.array2string(output.detach().numpy())
+f = open('testfile1234', "w")
+f.write(mystr)
+f.close()
+
 sorted, indices = torch.sort(output, descending=True)
 percentage = F.softmax(output, dim=1)[0] * 100.0
 results = [percentage[i].item() for i in indices[0][:5]]

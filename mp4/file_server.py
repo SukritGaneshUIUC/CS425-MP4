@@ -204,6 +204,9 @@ class FServer(server.Node):
         self.ml_port = ml_port
         self.coordinator_ip = socket.gethostbyname(coordinator_host)
 
+        self.model1 = models.alexnet(pretrained=True)
+        self.model2 = models.resnet50(pretrained=True)
+
     def get_ip(self, sdfsfileid):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
@@ -562,14 +565,14 @@ class FServer(server.Node):
             elif parsed_command[0] == 'print_stats':
                 print('printing stats ...')
                 # tell the coordintor to send statistics (related to time-per-query) for both jobs
-
+                # also list the vms assigned to each job
 
             #############################################################
             ##### File Commands
             #############################################################
             elif parsed_command[0] == 'utd':
-                print("uploading testing data. warning: 2500 files!!!")
-                self.upload_test_data(100)
+                print("uploading testing data. warning: lots of files!!!")
+                self.upload_test_data(int(parsed_command[1]))
             elif parsed_command[0] == 'put':
                 if (len(parsed_command) < 3):
                     print("usage: put <local_filepath> <remote_filename>")
