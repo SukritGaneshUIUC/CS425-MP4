@@ -520,8 +520,8 @@ class FServer(server.Node):
     # n should be multiple of 10
     def upload_test_data(self, n):
         for i in range(1, n + 1):
-            local_filename = './test-data/ILSVRC2012_test_' + str(i).zfill(8) + '.JPEG' 
-            remote_filename ='z' + str(i) + '.JPEG'
+            local_filename = './test_data/ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG' 
+            remote_filename ='z' + str(i)
             self.process_put(local_filename, remote_filename)
 
     # Add functions to change batch size, "train" model, and run inference
