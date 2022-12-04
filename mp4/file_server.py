@@ -24,6 +24,7 @@ import argparse
 # Global constant variables
 BUFFER_SIZE = 4096
 MASTER_HOST = INTRODUCER_HOST = socket.gethostbyname('fa22-cs425-8801.cs.illinois.edu')
+COORDINATOR_HOST = socket.gethostbyname('fa22-cs425-8802.cs.illinois.edu')
 MACHINE_NUM = int(socket.gethostname()[13:15])
 LOG_FILEPATH = f'machine.{MACHINE_NUM}.log'
 PING_PORT = 20240
@@ -34,7 +35,8 @@ MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
 
-ML_PORT = 10088
+COORDINATOR_PORT = 10088
+ML_PORT = 10089
 
 def send_file(conn: socket.socket, localfilepath, sdfsfileid, timestamp):
     header_dic = {
@@ -183,7 +185,7 @@ class FServer(server.Node):
                 s.sendto(json.dumps({'command_type': 'fail_notice', 'command_content': fail_ip}).encode(), (self.master_ip, self.master_port))
 
 
-    def __init__(self, ping_port: int, membership_port: int, ping_timeout: int, ping_interval: int, log_filepath: str, file_port: int, master_port: int, master_host: str):
+    def __init__(self, ping_port: int, membership_port: int, ping_timeout: int, ping_interval: int, log_filepath: str, file_port: int, master_port: int, master_host: str, coordinator_port: int, ml_port: int, coordinator_host: str):
         super().__init__(ping_port, membership_port, ping_timeout, ping_interval, log_filepath)
         self.file_port = file_port
         self.file_cache = {}
@@ -197,6 +199,10 @@ class FServer(server.Node):
         self.ls_lock = threading.Lock()
         self.master_port = master_port
         self.master_ip = socket.gethostbyname(master_host)
+
+        self.coordinator_port = coordinator_port
+        self.ml_port = ml_port
+        self.coordinator_ip = socket.gethostbyname(coordinator_host)
 
     def get_ip(self, sdfsfileid):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -553,6 +559,11 @@ class FServer(server.Node):
                 model_to_run = parsed_command[1]
                 # tell the coordinator to run the job
 
+            elif parsed_command[0] == 'print_stats':
+                print('printing stats ...')
+                # tell the coordintor to send statistics (related to time-per-query) for both jobs
+
+
             #############################################################
             ##### File Commands
             #############################################################
@@ -674,5 +685,5 @@ class FServer(server.Node):
 if __name__ == '__main__':
     # def __init__(self, ping_port: int, membership_port: int, ping_timeout: int, ping_interval: int, log_filepath: str,
     #              file_port: int):
-    server = FServer(PING_PORT, MEMBERSHIP_PORT, PING_TIMEOUT, PING_INTERVAL, LOG_FILEPATH, FILE_PORT, MASTER_PORT, MASTER_HOST)
+    server = FServer(PING_PORT, MEMBERSHIP_PORT, PING_TIMEOUT, PING_INTERVAL, LOG_FILEPATH, FILE_PORT, MASTER_PORT, MASTER_HOST, COORDINATOR_PORT, ML_PORT, COORDINATOR_HOST)
     server.run()

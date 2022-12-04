@@ -8,7 +8,8 @@ MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
 
-
+COORDINATOR_PORT = 10088
+ML_PORT = 10089
 
 class FMaster:
     def __init__(self, master_port: int, file_port: int):
