@@ -7,9 +7,21 @@ import time
 import struct
 import json
 
+# Pytorch imports
+import os
 import torch
+import torch.nn
+import torchvision.models as models
+import torchvision.transforms as transforms
+import torch.nn.functional as F 
+import torchvision.utils as utils
+import matplotlib.pyplot as plt
+import numpy as np 
+from PIL import Image
+import argparse
+# from zipfile import Zipfile
 
-
+# Global constant variables
 BUFFER_SIZE = 4096
 MASTER_HOST = INTRODUCER_HOST = socket.gethostbyname('fa22-cs425-8801.cs.illinois.edu')
 MACHINE_NUM = int(socket.gethostname()[13:15])
@@ -23,15 +35,6 @@ FILE_PORT = 10086
 GET_ADDR_PORT = 10087
 
 ML_PORT = 10088
-
-##########################################################
-# Model Loading Code
-##########################################################
-def load_alexnet():
-    print('loading alexnet')
-
-def load_resnet():
-    print('loading resnet')
 
 def send_file(conn: socket.socket, localfilepath, sdfsfileid, timestamp):
     header_dic = {
@@ -62,6 +65,10 @@ def receive_file(conn: socket.socket):
         data += line
         recv_size += len(line)
     return data, sdfsfileid, timestamp
+
+##########################################################
+# Class Decleration
+##########################################################
 
 class FServer(server.Node):
     class FileTable:
@@ -448,11 +455,80 @@ class FServer(server.Node):
         conn.send(header_bytes)
         conn.send(data)
 
-    ###################################################
-    # We write all ML functions here
+    # Process a "put" input from the command line
+    # Can also be called by another function to upload a file
+    def process_put(self, localfilepath, sdfsfileid):
+        ips = self.get_ip(sdfsfileid)
+        if not ips:
+            index = self.filehash(sdfsfileid)
+            ips = self.getAllReplicas(index)
+        timestamp = time.time()
+        for ip in ips:
+            t = threading.Thread(target=self.handle_put, args = (localfilepath, sdfsfileid, ip, timestamp))
+            t.start()
+        i = 0
+        command_id = sdfsfileid + '-' + str(timestamp)
+        while i < 100:
+            self.put_lock.acquire()
+            self.put_ack_cache.setdefault(command_id, 0)
+            cnt = self.put_ack_cache[command_id]
+            self.put_lock.release()
+            if cnt >= 3:
+                break
+            time.sleep(2)
+            i += 1
+        print('put complete.')
+
+    def process_get(self,sdfsfileid, localfilepath):
+        ips = self.get_ip(sdfsfileid)
+        print(len(ips))
+        for ip in ips:
+            t = threading.Thread(target=self.handle_get, args=(sdfsfileid, ip))
+            t.start()
+        i = 0
+
+        while i < 10:
+            self.get_lock.acquire()
+            self.get_ack_cache.setdefault(sdfsfileid, 0)
+            cnt = self.get_ack_cache[sdfsfileid]
+            self.get_lock.release()
+            if cnt >= 3:
+                break
+            time.sleep(2)
+            i += 1
+        if i == 10:
+            print('get failed.')
+        else:
+            self.file_lock.acquire()
+            data = self.file_cache[sdfsfileid][0]
+            self.file_lock.release()
+            with open(localfilepath, 'wb') as f:
+                f.write(data)
+            print('get complete.')
 
     ###################################################
+    # ML functions
+    ###################################################
+    def load_alexnet(self):
+        print('loading alexnet')
+        self.alexnet = models.alexnet(pretrained=True)
 
+    def load_resnet(self):
+        print('loading resnet')
+        self.resnet = models.resnet50(pretrained=True)
+
+    # n should be multiple of 10
+    def upload_test_data(self, n):
+        for i in range(1, n + 1):
+            local_filename = './test-data/ILSVRC2012_test_' + str(i).zfill(8) + '.JPEG' 
+            remote_filename ='z' + str(i) + '.JPEG'
+            self.process_put(local_filename, remote_filename)
+
+    # Add functions to change batch size, "train" model, and run inference
+
+    ###################################################
+    # Main Driver Function
+    ###################################################
     def run(self):
         self.join()
         t1 = threading.Thread(target=self.fileServerBackground)
@@ -480,56 +556,19 @@ class FServer(server.Node):
             #############################################################
             ##### File Commands
             #############################################################
+            elif parsed_command[0] == 'utd':
+                print("uploading testing data. warning: 2500 files!!!")
+                self.upload_test_data(100)
             elif parsed_command[0] == 'put':
-                localfilepath, sdfsfileid = parsed_command[1], parsed_command[2]
-                ips = self.get_ip(sdfsfileid)
-                if not ips:
-                    index = self.filehash(sdfsfileid)
-                    ips = self.getAllReplicas(index)
-                timestamp = time.time()
-                for ip in ips:
-                    t = threading.Thread(target=self.handle_put, args = (localfilepath, sdfsfileid, ip, timestamp))
-                    t.start()
-                i = 0
-                command_id = sdfsfileid + '-' + str(timestamp)
-                print('hellothere')
-                while i < 100:
-                    self.put_lock.acquire()
-                    self.put_ack_cache.setdefault(command_id, 0)
-                    cnt = self.put_ack_cache[command_id]
-                    self.put_lock.release()
-                    if cnt >= 3:
-                        break
-                    time.sleep(2)
-                    i += 1
-                print('put complete.')
+                if (len(parsed_command) < 3):
+                    print("usage: put <local_filepath> <remote_filename>")
+                    continue
+                self.process_put(parsed_command[1], parsed_command[2])
             elif parsed_command[0] == 'get':
-                sdfsfileid, localfilepath = parsed_command[1], parsed_command[2]
-                ips = self.get_ip(sdfsfileid)
-                print(len(ips))
-                for ip in ips:
-                    t = threading.Thread(target=self.handle_get, args=(sdfsfileid, ip))
-                    t.start()
-                i = 0
-
-                while i < 10:
-                    self.get_lock.acquire()
-                    self.get_ack_cache.setdefault(sdfsfileid, 0)
-                    cnt = self.get_ack_cache[sdfsfileid]
-                    self.get_lock.release()
-                    if cnt >= 3:
-                        break
-                    time.sleep(2)
-                    i += 1
-                if i == 10:
-                    print('get failed.')
-                else:
-                    self.file_lock.acquire()
-                    data = self.file_cache[sdfsfileid][0]
-                    self.file_lock.release()
-                    with open(localfilepath, 'wb') as f:
-                        f.write(data)
-                    print('get complete.')
+                if (len(parsed_command) < 3):
+                    print("usage: get <remote_filename> <local_filepath>")
+                    continue
+                self.process_get(parsed_command[1], parsed_command[2])
             elif parsed_command[0] == 'delete':
                 sdfsfileid = parsed_command[1]
                 ips = self.get_ip(sdfsfileid)

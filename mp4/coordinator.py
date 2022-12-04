@@ -16,3 +16,7 @@ import torch
 # although the above may need rebalancing to make query times equal
 # the rebalancing must happen automatically (or maybe use a mathematical calculation based on batch size and real-world performance)
 # also, the number of images per query WILL differ (this is the batch size)
+
+# default hyperparameters
+alexnet_batch_size = 10
+resnet_batch_size = 10
