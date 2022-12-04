@@ -10,7 +10,7 @@ import numpy as np
 from PIL import Image
 import argparse
 
-alexnet = models.alexnet(pretrained=True)
+alexnet = models.resnet50(pretrained=True)
 
 data_transforms = transforms.Compose([
         transforms.Resize((224,224)),             # resize the input to 224x224
@@ -31,7 +31,7 @@ output = alexnet(batch_img)
 sorted, indices = torch.sort(output, descending=True)
 percentage = F.softmax(output, dim=1)[0] * 100.0
 results = [percentage[i].item() for i in indices[0][:5]]
-print("\nalexnet: print the first 5 classes the testing image belongs to")
+print("\nresnet50: print the first 5 classes the testing image belongs to")
 for i in range(5):
     print('{:.4f}%'.format(results[i]))
 
