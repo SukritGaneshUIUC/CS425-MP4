@@ -5,7 +5,6 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 import torch.nn.functional as F 
 import torchvision.utils as utils
-import cv2 
 import matplotlib.pyplot as plt
 import numpy as np 
 from PIL import Image
@@ -20,7 +19,7 @@ data_transforms = transforms.Compose([
         # the normalization is based on images from ImageNet
     ])
 
-test_image_filepath = "tiger.jpg"
+test_image_filepath = "test_data/tiger.jpg"
 img = Image.open(test_image_filepath)
 transformed_img = data_transforms(img)
 batch_img = torch.unsqueeze(transformed_img, 0)
