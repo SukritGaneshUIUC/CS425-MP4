@@ -50,8 +50,9 @@ class Coordinator:
         self.statistics_lock = threading.Lock()
         self.model_1_query_times = []
         self.model_2_query_times = []
-        self.model_1_query_starttimes = []
-        self.model_2_query_starttimes = []
+        self.model_1_query_endtimes = []
+        self.model_2_query_endtimes = []
+
 
     # def repair(self, ip):
     #     start_time = time.time()
@@ -104,6 +105,7 @@ class Coordinator:
                 decoded_command = json.loads(encoded_command.decode())
                 command_type = decoded_command['command_type']
                 if command_type == 'set_batch_size':
+                    print("hey")
                     model = int(decoded_command['model_to_change'])
                     new_batch_size = int(decoded_command['new_batch_size'])
                     self.hyperparameter_lock.acquire()
@@ -112,6 +114,8 @@ class Coordinator:
                     else:
                         self.model2_batch_size = new_batch_size
                     self.hyperparameter_lock.release()
+                elif command_type == 'run_job':
+                    model = int(decoded_command['model_to_run'])
                 elif command_type == 'get_stats':
                     # jobs per vm
                     self.statistics_lock.acquire()
@@ -132,7 +136,6 @@ class Coordinator:
                     print('90th, 95th, 99th percentile query time:', np.pecentile(self.model_1_query_times, (90, 95, 99)))
 
                     print('job 2 query time stats:')
-                    print('job 1 query time stats:')
                     print('queries processed so far:', len(self.model_2_query_times))
                     print('average query time:', np.mean(self.model_2_query_times))
                     print('std dev query time:', np.std(self.model_2_query_times))
@@ -155,7 +158,7 @@ class Coordinator:
 
                     self.statistics_lock.release()
                 # used by VMs to send query time stats back to coordinator
-                elif command_type == 'query_time'
+                elif command_type == 'query_time':
                     model = int(decoded_command['model'])
                     query_time = float(decoded_command['query_time'])
                     self.statistics_lock.acquire()
@@ -168,7 +171,7 @@ class Coordinator:
 
     # def get_addr_thread(self):
     #     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    #         s.bind((self.host, GET_ADDR_PORT))
+    #         s.bind((self.host, ML_PORT))
     #         s.listen()
     #         while True:
     #             conn, addr = s.accept()
@@ -197,6 +200,6 @@ class Coordinator:
                 self.ftn_lock.release()
 
 if __name__ == '__main__':
-    master = FMaster(MASTER_PORT, FILE_PORT)
+    master = Coordinator(COORDINATOR_PORT, ML_PORT)
     master.run()
 

@@ -556,16 +556,20 @@ class FServer(server.Node):
             elif parsed_command[0] == 'set_batch_size':
                 model_to_change = parsed_command[1]
                 new_batch_size = parsed_command[2]
-                # Must send this info to the coordinator so it can change batch size
+                print("here")
+                
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                    s.sendto(json.dumps({'command_type': 'set_batch_size', 'model_to_change': model_to_change, 'new_batch_size':new_batch_size}).encode(), (self.coordinator_ip, self.coordinator_port))
 
             elif parsed_command[0] == 'run_job':
                 model_to_run = parsed_command[1]
-                # tell the coordinator to run the job
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                    s.sendto(json.dumps({'command_type': 'run_job', 'model_to_run': model_to_run}).encode(), (self.coordinator_ip, self.coordinator_port))
 
-            elif parsed_command[0] == 'print_stats':
-                print('printing stats ...')
-                # tell the coordintor to send statistics (related to time-per-query) for both jobs
-                # also list the vms assigned to each job
+            elif parsed_command[0] == 'get_stats':
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                    s.sendto(json.dumps({'command_type': 'get_stats'}).encode(), (self.coordinator_ip, self.coordinator_port))
+               
 
             #############################################################
             ##### File Commands
