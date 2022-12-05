@@ -243,7 +243,7 @@ class Coordinator:
                                     index = 0
                                 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as m:
                                     m.sendto(json.dumps({'command_type' : "start_query", 'start_index': pair[0], "end_index": pair[1], "model" : 1, "repeat": "yes"}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
-                        else:
+                        if VM_num in self.job_2_vms:
                             self.job_2_vms.remove(VM_num)
                             index = 0
                             for pair in check[VM_num]:
