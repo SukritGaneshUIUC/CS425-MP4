@@ -7,6 +7,8 @@ import time
 MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
+COORDINATOR_HOST = socket.gethostbyname('fa22-cs425-8802.cs.illinois.edu')
+total = {"172.22.157.36" : 1, "172.22.159.36" : 2, "172.22.95.36" : 3, "172.22.157.37" : 4, "172.22.159.37" : 5, "172.22.95.37" : 6, "172.22.157.38" : 7, "172.22.159.38" : 8, "172.22.95.38" : 9, "172.22.157.39" : 10}
 
 COORDINATOR_PORT = 10088
 ML_PORT = 10089
@@ -20,7 +22,7 @@ class FMaster:
         self.file_to_node = {}
         self.host = socket.gethostbyname(socket.gethostname())
         self.file_port = file_port
-
+        self.coordinator_ip = socket.gethostbyname(COORDINATOR_HOST)
     def repair(self, ip):
         start_time = time.time()
         self.ntf_lock.acquire()
@@ -74,6 +76,11 @@ class FMaster:
                 if command_type == 'fail_notice':
                     fail_ip = decoded_command['command_content']
                     for ip in fail_ip:
+                        if ip == self.coordinator_ip:
+                            print("master coord fail")
+                            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as m:
+                                for check in total.keys():
+                                    m.sendto(json.dumps({'command_type' : "coord_fail"}).encode(), (check, self.coordinator_port))
                         t = threading.Thread(target=self.repair, args=(ip, ))
                         t.start()
                 elif command_type == 'put_notice':

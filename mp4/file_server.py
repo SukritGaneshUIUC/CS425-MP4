@@ -25,6 +25,7 @@ total = {"172.22.157.36" : 1, "	172.22.159.36" : 2, "172.22.95.36" : 3, "172.22.
 BUFFER_SIZE = 4096
 MASTER_HOST = INTRODUCER_HOST = socket.gethostbyname('fa22-cs425-8801.cs.illinois.edu')
 COORDINATOR_HOST = socket.gethostbyname('fa22-cs425-8802.cs.illinois.edu')
+BACKUP_HOST = socket.gethostbyname('fa22-cs425-8803.cs.illinois.edu')
 MACHINE_NUM = int(socket.gethostname()[13:15])
 LOG_FILEPATH = f'machine.{MACHINE_NUM}.log'
 PING_PORT = 20240
@@ -580,21 +581,18 @@ class FServer(server.Node):
     def MLbackground(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.bind((self.host, self.ml_port))
-            prev = -1
             while True:
                 encoded_command, addr = s.recvfrom(4096)
                 decoded_command = json.loads(encoded_command.decode())
                 command_type = decoded_command['command_type']
                 if command_type == 'start_query':
                     start_index = int(decoded_command['start_index'])
-                    if decoded_command['repeat'] == 'yes':
-                        print("inside" + str(start_index))
-                    if decoded_command['repeat'] == 'no':
-                        print("before" + str(start_index))
                     end_index = int(decoded_command['end_index'])
                     model = int(decoded_command['model'])
                     
                     self.run_model(start_index, end_index, model)
+                elif command_type == "coord_fail":
+                    self.coordinator_ip = BACKUP_HOST
 
     ###################################################
     # Main Driver Function

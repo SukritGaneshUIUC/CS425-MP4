@@ -17,7 +17,7 @@ import torch
 # although the above may need rebalancing to make query times equal
 # the rebalancing must happen automatically (or maybe use a mathematical calculation based on batch size and real-world performance)
 # also, the number of images per query WILL differ (this is the batch size)
-total = {"172.22.157.36" : 1, "	172.22.159.36" : 2, "172.22.95.36" : 3, "172.22.157.37" : 4, "172.22.159.37" : 5, "172.22.95.37" : 6, "172.22.157.38" : 7, "172.22.159.38" : 8, "172.22.95.38" : 9, "172.22.157.39" : 10}
+total = {"172.22.157.36" : 1, "172.22.159.36" : 2, "172.22.95.36" : 3, "172.22.157.37" : 4, "172.22.159.37" : 5, "172.22.95.37" : 6, "172.22.157.38" : 7, "172.22.159.38" : 8, "172.22.95.38" : 9, "172.22.157.39" : 10}
 
 MASTER_PORT = 20086
 FILE_PORT = 10086
@@ -172,10 +172,13 @@ class Coordinator:
                             index_two += 1
                     print("Average query rate for job 2: ", index_two/10.0)
                     
-                            
+                    
                     
 
                     self.statistics_lock.release()
+                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                        s.sendto(json.dumps({'command_type' : "update", "model1_time" : self.model_1_query_times, "model2_time" :self.model_2_query_times, "model1:end" :self.model_1_query_endtimes, "model2:end" : self.model_2_query_endtimes, "model1job": self.job_1_vms, "model2job": self.job_2_vms}).encode(), (vm_leg_1 + str(3).zfill(2) + vm_leg_2, self.coordinator_port))
+
                
                 # used by VMs to send query time stats back to coordinator
                 elif command_type == 'query_time':
