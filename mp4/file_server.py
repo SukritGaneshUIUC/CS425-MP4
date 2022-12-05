@@ -20,7 +20,7 @@ import numpy as np
 from PIL import Image
 import argparse
 # from zipfile import Zipfile
-
+total = {"172.22.157.36" : 1, "	172.22.159.36" : 2, "172.22.95.36" : 3, "172.22.157.37" : 4, "172.22.159.37" : 5, "172.22.95.37" : 6, "172.22.157.38" : 7, "172.22.159.38" : 8, "172.22.95.38" : 9, "172.22.157.39" : 10}
 # Global constant variables
 BUFFER_SIZE = 4096
 MASTER_HOST = INTRODUCER_HOST = socket.gethostbyname('fa22-cs425-8801.cs.illinois.edu')
@@ -580,14 +580,20 @@ class FServer(server.Node):
     def MLbackground(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.bind((self.host, self.ml_port))
+            prev = -1
             while True:
                 encoded_command, addr = s.recvfrom(4096)
                 decoded_command = json.loads(encoded_command.decode())
                 command_type = decoded_command['command_type']
                 if command_type == 'start_query':
                     start_index = int(decoded_command['start_index'])
+                    if decoded_command['repeat'] == 'yes':
+                        print("inside" + start_index)
+                    if decoded_command['repeat'] == 'no':
+                        print("before" + start_index)
                     end_index = int(decoded_command['end_index'])
                     model = int(decoded_command['model'])
+                    
                     self.run_model(start_index, end_index, model)
 
     ###################################################

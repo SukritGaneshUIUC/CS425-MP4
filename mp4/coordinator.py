@@ -17,6 +17,7 @@ import torch
 # although the above may need rebalancing to make query times equal
 # the rebalancing must happen automatically (or maybe use a mathematical calculation based on batch size and real-world performance)
 # also, the number of images per query WILL differ (this is the batch size)
+total = {"172.22.157.36" : 1, "	172.22.159.36" : 2, "172.22.95.36" : 3, "172.22.157.37" : 4, "172.22.159.37" : 5, "172.22.95.37" : 6, "172.22.157.38" : 7, "172.22.159.38" : 8, "172.22.95.38" : 9, "172.22.157.39" : 10}
 
 MASTER_PORT = 20086
 FILE_PORT = 10086
@@ -210,12 +211,12 @@ class Coordinator:
                 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
                     if the_vm in self.job_1_vms:
                         if index1 < total_job:
-                            s.sendto(json.dumps({'command_type' : "start_query", 'start_index': index1, "end_index": index1+self.model1_batch_size, "model" : 1}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
+                            s.sendto(json.dumps({'command_type' : "start_query", 'start_index': index1, "end_index": index1+self.model1_batch_size, "model" : 1, "repeat": "no"}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
                             index1 += self.model1_batch_size
                             check[the_vm].append((index1, index1+self.model1_batch_size))
                     if the_vm in self.job_2_vms:
                         if index2 < total_job:
-                            s.sendto(json.dumps({'command_type' : "start_query", 'start_index': index2, "end_index": index2+self.model2_batch_size, "model" : 2}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
+                            s.sendto(json.dumps({'command_type' : "start_query", 'start_index': index2, "end_index": index2+self.model2_batch_size, "model" : 2, "repeat" : "no"}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
                             check[the_vm].append((index2, index1+self.model2_batch_size))
                             index2 += self.model2_batch_size
                     
@@ -230,7 +231,32 @@ class Coordinator:
                 if command_type == 'fail_notice':
                     fail_ip = decoded_command['command_content']
                     for ip in fail_ip:
-                        print("dead " + ip)
+                        model = 0
+                        VM_num = total[ip]
+                        if VM_num in self.job_1_vms:
+                            self.job_1_vms.remove(VM_num)
+                            index = 0
+                            for pair in check[VM_num]:
+                                the_vm = self.job_1_vms[index]
+                                index+= 1
+                                if index == len(self.job_1_vms):
+                                    index = 0
+                                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                                    s.sendto(json.dumps({'command_type' : "start_query", 'start_index': pair[0], "end_index": pair[1], "model" : 1, "repeat": "yes"}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
+                        else:
+                            self.job_2_vms.remove(VM_num)
+                            index = 0
+                            for pair in check[VM_num]:
+                                the_vm = self.job_2_vms[index]
+                                index+= 1
+                                if index == len(self.job_2_vms):
+                                    index = 0
+                                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                                    s.sendto(json.dumps({'command_type' : "start_query", 'start_index': pair[0], "end_index": pair[1], "model" : 2, "repeat": "yes"}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
+                           
+                        
+                        
+                        
 
 
     def run(self):
