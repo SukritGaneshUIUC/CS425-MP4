@@ -546,8 +546,8 @@ class FServer(server.Node):
         start_time = time.time()
 
         for i in range(start_index, end_index + 1):
-            self.process_get('./test_data/ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG', 'ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG')
             local_filename = 'ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG'
+            self.process_get('z' + str(i), local_filename)
             img = Image.open(local_filename)
             transformed_img = data_transforms(img)
             batch_img = torch.unsqueeze(transformed_img, 0)

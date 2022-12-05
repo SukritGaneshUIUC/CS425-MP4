@@ -21,13 +21,13 @@ import torch
 MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
-total_job = 500
+total_job = 150
 COORDINATOR_PORT = 10088
 ML_PORT = 10089
 
 # default hyperparameters
-model1_batch_size = 4
-model2_batch_size = 4
+model1_batch_size = 3
+model2_batch_size = 3
 
 # use zfill(2) for adding vm number
 vm_leg_1 = 'fa22-cs425-88' 
