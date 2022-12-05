@@ -8,8 +8,8 @@ MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
 COORDINATOR_HOST = socket.gethostbyname('fa22-cs425-8802.cs.illinois.edu')
-total = {"172.22.157.36" : 1, "172.22.159.36" : 2, "172.22.95.36" : 3, "172.22.157.37" : 4, "172.22.159.37" : 5, "172.22.95.37" : 6, "172.22.157.38" : 7, "172.22.159.38" : 8, "172.22.95.38" : 9, "172.22.157.39" : 10}
-
+vm_leg_1 = 'fa22-cs425-88' 
+vm_leg_2 = '.cs.illinois.edu'
 COORDINATOR_PORT = 10088
 ML_PORT = 10089
 
@@ -79,8 +79,8 @@ class FMaster:
                         if ip == self.coordinator_ip:
                             print("master coord fail")
                             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as m:
-                                for check in total.keys():
-                                    m.sendto(json.dumps({'command_type' : "coord_fail"}).encode(), (check, COORDINATOR_PORT))
+                                for check in range(1, 11):
+                                    m.sendto(json.dumps({'command_type' : "coord_fail"}).encode(), (vm_leg_1 + str(check).zfill(2) + vm_leg_2, COORDINATOR_PORT))
                         t = threading.Thread(target=self.repair, args=(ip, ))
                         t.start()
                 elif command_type == 'put_notice':
