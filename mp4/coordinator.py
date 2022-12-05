@@ -230,12 +230,9 @@ class Coordinator:
                 command_type = decoded_command['command_type']
                 if command_type == 'fail_notice':
                     fail_ip = decoded_command['command_content']
-                    print("here")
                     for ip in fail_ip:
                         
                         VM_num = total[ip]
-                        print(VM_num)
-                        print("valid works")
                         if VM_num in self.job_1_vms:
                             self.job_1_vms.remove(VM_num)
                             index = 0
@@ -244,8 +241,8 @@ class Coordinator:
                                 index+= 1
                                 if index == len(self.job_1_vms):
                                     index = 0
-                                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-                                    s.sendto(json.dumps({'command_type' : "start_query", 'start_index': pair[0], "end_index": pair[1], "model" : 1, "repeat": "yes"}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
+                                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as m:
+                                    m.sendto(json.dumps({'command_type' : "start_query", 'start_index': pair[0], "end_index": pair[1], "model" : 1, "repeat": "yes"}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
                         else:
                             self.job_2_vms.remove(VM_num)
                             index = 0
