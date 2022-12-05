@@ -582,10 +582,12 @@ class FServer(server.Node):
             while True:
                 encoded_command, addr = s.recvfrom(4096)
                 decoded_command = json.loads(encoded_command.decode())
-                start_index = int(decoded_command['start_index'])
-                end_index = int(decoded_command['end_index'])
-                model = int(decoded_command['model'])
-                self.run_model(start_index, end_index, model)
+                command_type = decoded_command['command_type']
+                if command_type == 'start_query':
+                    start_index = int(decoded_command['start_index'])
+                    end_index = int(decoded_command['end_index'])
+                    model = int(decoded_command['model'])
+                    self.run_model(start_index, end_index, model)
 
     ###################################################
     # Main Driver Function

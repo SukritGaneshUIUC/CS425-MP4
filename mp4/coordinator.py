@@ -209,12 +209,12 @@ class Coordinator:
                 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
                     if the_vm in self.job_1_vms:
                         if index1 < total_job:
-                            s.sendto(json.dumps({'start_index': index1, "end_index": index1+self.model1_batch_size, "model" : 1}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
+                            s.sendto(json.dumps({'command_type' : "start_query", 'start_index': index1, "end_index": index1+self.model1_batch_size, "model" : 1}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
                             index1 += self.model1_batch_size
                             check[the_vm].append((index1, index1+self.model1_batch_size))
                     if the_vm in self.job_2_vms:
                         if index2 < total_job:
-                            s.sendto(json.dumps({'start_index': index2, "end_index": index2+self.model2_batch_size, "model" : 2}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
+                            s.sendto(json.dumps({'command_type' : "start_query", 'start_index': index2, "end_index": index2+self.model2_batch_size, "model" : 2}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
                             check[the_vm].append((index2, index1+self.model2_batch_size))
                             index2 += self.model2_batch_size
                     
