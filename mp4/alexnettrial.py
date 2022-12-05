@@ -15,7 +15,7 @@ alexnet = models.alexnet(pretrained=True)
 data_transforms = transforms.Compose([
         transforms.Resize((224,224)),             # resize the input to 224x224
         transforms.ToTensor(),              # put the input to tensor format
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # normalize the input
+        # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),  # normalize the input
         # the normalization is based on images from ImageNet
     ])
 

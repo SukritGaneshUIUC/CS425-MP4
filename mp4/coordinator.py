@@ -22,7 +22,7 @@ total = {"172.22.157.36" : 1, "172.22.159.36" : 2, "172.22.95.36" : 3, "172.22.1
 MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
-total_job = 150
+total_job = 300
 COORDINATOR_PORT = 10088
 ML_PORT = 10089
 END_PORT = 10090
@@ -140,6 +140,12 @@ class Coordinator:
                     print('job 2 vms:')
                     for the_vm in self.job_2_vms:
                         print(vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2)
+
+                    # hyperparameter stats
+                    print()
+                    print('job 1 batch size:', self.model1_batch_size)
+                    print('job 2 batch size:', self.model2_batch_size)
+                    print()
 
                     # query time stats
                     print()
