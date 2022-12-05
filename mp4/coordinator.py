@@ -121,11 +121,12 @@ class Coordinator:
                         self.model2_batch_size = new_batch_size
                     self.hyperparameter_lock.release()
                 elif command_type == 'run_job':
-                    model = int(decoded_command['model_to_run'])
-                    if(model == 1):
-                        self.start_1 = True
-                    else:
-                        self.start_2 = True
+                    # model = int(decoded_command['model_to_run'])
+                    self.start_1 = True
+                    # if(model == 1):
+                    #     self.start_1 = True
+                    # else:
+                    #     self.start_2 = True
              
                     
                 elif command_type == 'get_stats':
@@ -142,10 +143,11 @@ class Coordinator:
                     print()
                     print('job 1 query time stats:')
                     print('queries processed so far:', len(self.model_1_query_times))
-                    print('average query time:', np.mean(self.model_1_query_times))
-                    print('std dev query time:', np.std(self.model_1_query_times))
-                    print('median query time:', np.median(self.model_1_query_times))
-                    print('90th, 95th, 99th percentile query time:', np.percentile(self.model_1_query_times, (90, 95, 99)))
+                    if (len(self.model_1_query_times) != 0):
+                        print('average query time:', np.mean(self.model_1_query_times))
+                        print('std dev query time:', np.std(self.model_1_query_times))
+                        print('median query time:', np.median(self.model_1_query_times))
+                        print('90th, 95th, 99th percentile query time:', np.percentile(self.model_1_query_times, (90, 95, 99)))
 
                     print('job 2 query time stats:')
                     print('queries processed so far:', len(self.model_2_query_times))
@@ -198,19 +200,20 @@ class Coordinator:
             time.sleep(1)
             self.start_lock.release()
         
-        index = 1
+        index1 = 1
+        index2 = 1
         total_vm = self.job_1_vms + self.job_2_vms
-        while(index < total_job):
+        while(index1 < total_job or index2 < total_job):
             for the_vm in total_vm:
                 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
                     if the_vm in self.job_1_vms:
-                        s.sendto(json.dumps({'start_index': index, "end_index": index+self.model1_batch_size, "model" : 1}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
-                        index += self.model1_batch_size
-                    else:
-                        s.sendto(json.dumps({'start_index': index, "end_index": index+self.model2_batch_size, "model" : 2}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
-                        index += self.model2_batch_size
-                if(index >= total_job):
-                    break
+                        if index1 < total_job:
+                            s.sendto(json.dumps({'start_index': index1, "end_index": index1+self.model1_batch_size, "model" : 1}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
+                            index1 += self.model1_batch_size
+                    if the_vm in self.job_2_vms:
+                        if index2 < total_job:
+                            s.sendto(json.dumps({'start_index': index2, "end_index": index2+self.model2_batch_size, "model" : 2}).encode(), (vm_leg_1 + str(the_vm).zfill(2) + vm_leg_2, self.ml_port))
+                            index2 += self.model2_batch_size
             
 
     def run(self):

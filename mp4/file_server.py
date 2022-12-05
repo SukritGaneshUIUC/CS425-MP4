@@ -545,7 +545,7 @@ class FServer(server.Node):
 
         start_time = time.time()
 
-        for i in range(start_index, end_index + 1):
+        for i in range(start_index, end_index):
             local_filename = 'ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG'
             self.process_get('z' + str(i), local_filename)
             img = Image.open(local_filename)
