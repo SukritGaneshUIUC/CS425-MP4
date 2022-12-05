@@ -592,6 +592,7 @@ class FServer(server.Node):
                     
                     self.run_model(start_index, end_index, model)
                 elif command_type == "coord_fail":
+                    print("coord fail")
                     self.coordinator_ip = BACKUP_HOST
 
     ###################################################
