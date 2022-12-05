@@ -230,9 +230,12 @@ class Coordinator:
                 command_type = decoded_command['command_type']
                 if command_type == 'fail_notice':
                     fail_ip = decoded_command['command_content']
+                    print("here")
                     for ip in fail_ip:
-                        model = 0
+                        
                         VM_num = total[ip]
+                        print(VM_num)
+                        print("valid works")
                         if VM_num in self.job_1_vms:
                             self.job_1_vms.remove(VM_num)
                             index = 0
