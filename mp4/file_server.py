@@ -567,9 +567,9 @@ class FServer(server.Node):
         f.write(mystr)
         f.close()
         if model == 1:
-            self.process_put("testcheck", "x_" + str(start_index) + "_" + str(end_index))
+            self.process_put("testcheck", "x_" + str(start_index) + "_" + str(end_index-1))
         else:
-            self.process_put("testcheck", "y_" + str(start_index) + "_" + str(end_index))
+            self.process_put("testcheck", "y_" + str(start_index) + "_" + str(end_index-1))
 
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.sendto(json.dumps({'command_type': 'query_time', 'query_time': total_time, "end_time" : end_time, "model" : model}).encode(), (self.coordinator_ip, self.coordinator_port))
