@@ -113,15 +113,13 @@ class standby_Coordinator:
                 decoded_command = json.loads(encoded_command.decode())
                 command_type = decoded_command['command_type']
                 if command_type == "update":
-                    print("receiving data")
                     self.model_1_query_times = list(decoded_command["model1_time"])
                     self.model_2_query_times = list(decoded_command["model2_time"])
                     self.model_1_query_endtimes = list(decoded_command["model1:end"])
                     self.model_2_query_endtimes = list(decoded_command["model2:end"])
                     self.job_1_vms = list(decoded_command["model1job"])
                     self.job_2_vms = list(decoded_command["model2job"])
-                    print("works" + str(self.job_1_vms))
-                    print("also " + str(len(self.model_1_query_times)))
+                  
                 elif command_type == 'set_batch_size':
 
                     model = int(decoded_command['model_to_change'])
