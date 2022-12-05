@@ -176,8 +176,8 @@ class Coordinator:
                     
 
                     self.statistics_lock.release()
-                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-                        s.sendto(json.dumps({'command_type' : "update", "model1_time" : self.model_1_query_times, "model2_time" :self.model_2_query_times, "model1:end" :self.model_1_query_endtimes, "model2:end" : self.model_2_query_endtimes, "model1job": self.job_1_vms, "model2job": self.job_2_vms}).encode(), (vm_leg_1 + str(3).zfill(2) + vm_leg_2, self.coordinator_port))
+                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as m:
+                        m.sendto(json.dumps({'command_type' : "update", "model1_time" : self.model_1_query_times, "model2_time" :self.model_2_query_times, "model1:end" :self.model_1_query_endtimes, "model2:end" : self.model_2_query_endtimes, "model1job": self.job_1_vms, "model2job": self.job_2_vms}).encode(), (vm_leg_1 + str(3).zfill(2) + vm_leg_2, self.coordinator_port))
 
                
                 # used by VMs to send query time stats back to coordinator
