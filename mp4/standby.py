@@ -120,7 +120,7 @@ class standby_Coordinator:
                     self.model_2_query_endtimes = list(decoded_command["model2:end"])
                     self.job_1_vms = list(decoded_command["model1job"])
                     self.job_2_vms = list(decoded_command["model2job"])
-                    print("works" + self.job_1_vms)
+                    print("works" + str(self.job_1_vms))
                     print("also " + str(len(self.model_1_query_times)))
                 elif command_type == 'set_batch_size':
 
