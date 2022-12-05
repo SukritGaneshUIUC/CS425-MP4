@@ -34,6 +34,7 @@ PING_TIMEOUT = 2
 MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
+END_PORT = 10090
 
 COORDINATOR_PORT = 10088
 ML_PORT = 10089
@@ -184,7 +185,7 @@ class FServer(server.Node):
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
                 s.sendto(json.dumps({'command_type': 'fail_notice', 'command_content': fail_ip}).encode(), (self.master_ip, self.master_port))
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-                s.sendto(json.dumps({'command_type': 'fail_notice', 'command_content': fail_ip}).encode(), (self.coordinator_ip, self.ml_port))
+                s.sendto(json.dumps({'command_type': 'fail_notice', 'command_content': fail_ip}).encode(), (self.coordinator_ip, END_PORT))
 
 
     def __init__(self, ping_port: int, membership_port: int, ping_timeout: int, ping_interval: int, log_filepath: str, file_port: int, master_port: int, master_host: str, coordinator_port: int, ml_port: int, coordinator_host: str):

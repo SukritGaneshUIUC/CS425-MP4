@@ -24,6 +24,7 @@ GET_ADDR_PORT = 10087
 total_job = 150
 COORDINATOR_PORT = 10088
 ML_PORT = 10089
+END_PORT = 10090
 
 # default hyperparameters
 model1_batch_size = 3
@@ -221,7 +222,7 @@ class Coordinator:
         
         
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            s.bind((self.host, self.ml_port))
+            s.bind((self.host, END_PORT))
             while True:
                 encoded_command, addr = s.recvfrom(4096)
                 decoded_command = json.loads(encoded_command.decode())
