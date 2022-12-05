@@ -534,6 +534,52 @@ class FServer(server.Node):
             self.process_put(local_filename, remote_filename)
 
     # Add functions to change batch size, "train" model, and run inference
+    def run_model(self, start_index, end_index, model):
+        data_transforms = transforms.Compose([
+            transforms.Resize((224,224)),             # resize the input to 224x224
+            transforms.ToTensor(),              # put the input to tensor format
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # normalize the input
+            # the normalization is based on images from ImageNet
+        ])
+        mystr = ""
+        print(start_index, end_index)
+        start_time = time.time()
+        for i in range(start_index, end_index + 1):
+            self.process_get('./test_data/ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG', 'ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG')
+            local_filename = 'ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG'
+            img = Image.open(local_filename)
+            transformed_img = data_transforms(img)
+            batch_img = torch.unsqueeze(transformed_img, 0)
+            
+            if(MACHINE_NUM < 6):
+                self.model1.eval()
+                output = self.model1(batch_img)
+                mystr += np.array2string(output.detach().numpy())
+            else:
+                self.model2.eval()
+                output = self.model2(batch_img)
+                mystr += np.array2string(output.detach().numpy())
+        end_time = time.time()
+        total_time = end_time - start_time
+
+        f = open("testcheck", "w")
+        f.write(mystr)
+        f.close()
+        self.process_put("testcheck", 'VM' + str(MACHINE_NUM) + "start_index" + str(start_index) + "end_index" + str(end_index))
+
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.sendto(json.dumps({'command_type': 'query_time', 'query_time': total_time, "end_time" : end_time, "model" : model}).encode(), (self.coordinator_ip, self.coordinator_port))
+            
+    def MLbackground(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.bind((self.host, self.ml_port))
+            while True:
+                encoded_command, addr = s.recvfrom(4096)
+                decoded_command = json.loads(encoded_command.decode())
+                start_index = int(decoded_command['start_index'])
+                end_index = int(decoded_command['end_index'])
+                model = int(decoded_command['model'])
+                self.run_model(start_index, end_index, model)
 
     ###################################################
     # Main Driver Function
@@ -542,6 +588,8 @@ class FServer(server.Node):
         self.join()
         t1 = threading.Thread(target=self.fileServerBackground)
         t1.start()
+        t2 = threading.Thread(target=self.MLbackground)
+        t2.start()
 
         while True:
             command = input('>')
