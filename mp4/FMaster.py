@@ -80,7 +80,7 @@ class FMaster:
                             print("master coord fail")
                             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as m:
                                 for check in range(1, 11):
-                                    m.sendto(json.dumps({'command_type' : "coord_fail"}).encode(), (vm_leg_1 + str(check).zfill(2) + vm_leg_2, COORDINATOR_PORT))
+                                    m.sendto(json.dumps({'command_type' : "coord_fail"}).encode(), (vm_leg_1 + str(check).zfill(2) + vm_leg_2, ML_PORT))
                         t = threading.Thread(target=self.repair, args=(ip, ))
                         t.start()
                 elif command_type == 'put_notice':
