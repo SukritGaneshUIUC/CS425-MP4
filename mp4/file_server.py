@@ -183,6 +183,8 @@ class FServer(server.Node):
         if fail_ip:
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
                 s.sendto(json.dumps({'command_type': 'fail_notice', 'command_content': fail_ip}).encode(), (self.master_ip, self.master_port))
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.sendto(json.dumps({'command_type': 'fail_notice', 'command_content': fail_ip}).encode(), (self.coordinator_ip, self.ml_port))
 
 
     def __init__(self, ping_port: int, membership_port: int, ping_timeout: int, ping_interval: int, log_filepath: str, file_port: int, master_port: int, master_host: str, coordinator_port: int, ml_port: int, coordinator_host: str):
@@ -544,32 +546,32 @@ class FServer(server.Node):
         mystr = ""
 
         start_time = time.time()
-
-        for i in range(start_index, end_index):
-            local_filename = 'ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG'
-            self.process_get('z' + str(i), local_filename)
-            img = Image.open(local_filename)
-            transformed_img = data_transforms(img)
-            batch_img = torch.unsqueeze(transformed_img, 0)
+        time.sleep(1)
+        # for i in range(start_index, end_index):
+        #     local_filename = 'ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG'
+        #     self.process_get('z' + str(i), local_filename)
+        #     img = Image.open(local_filename)
+        #     transformed_img = data_transforms(img)
+        #     batch_img = torch.unsqueeze(transformed_img, 0)
             
-            if(model == 1):
-                self.model1.eval()
-                output = self.model1(batch_img)
-                mystr += np.array2string(output.detach().numpy())
-            else:
-                self.model2.eval()
-                output = self.model2(batch_img)
-                mystr += np.array2string(output.detach().numpy())
+        #     if(model == 1):
+        #         self.model1.eval()
+        #         output = self.model1(batch_img)
+        #         mystr += np.array2string(output.detach().numpy())
+        #     else:
+        #         self.model2.eval()
+        #         output = self.model2(batch_img)
+        #         mystr += np.array2string(output.detach().numpy())
         end_time = time.time()
         total_time = end_time - start_time
 
-        f = open("testcheck", "w")
-        f.write(mystr)
-        f.close()
-        if model == 1:
-            self.process_put("testcheck", "x_" + str(start_index) + "_" + str(end_index-1))
-        else:
-            self.process_put("testcheck", "y_" + str(start_index) + "_" + str(end_index-1))
+        # f = open("testcheck", "w")
+        # f.write(mystr)
+        # f.close()
+        # if model == 1:
+        #     self.process_put("testcheck", "x_" + str(start_index) + "_" + str(end_index-1))
+        # else:
+        #     self.process_put("testcheck", "y_" + str(start_index) + "_" + str(end_index-1))
 
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.sendto(json.dumps({'command_type': 'query_time', 'query_time': total_time, "end_time" : end_time, "model" : model}).encode(), (self.coordinator_ip, self.coordinator_port))
