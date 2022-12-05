@@ -542,10 +542,11 @@ class FServer(server.Node):
         data_transforms = transforms.Compose([
             transforms.Resize((224,224)),             # resize the input to 224x224
             transforms.ToTensor(),              # put the input to tensor format
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # normalize the input
             # the normalization is based on images from ImageNet
         ])
         mystr = ""
+
+        # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # normalize the input
 
         start_time = time.time()
         for i in range(start_index, end_index):
