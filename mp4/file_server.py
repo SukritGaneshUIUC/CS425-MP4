@@ -542,8 +542,9 @@ class FServer(server.Node):
             # the normalization is based on images from ImageNet
         ])
         mystr = ""
-        print(start_index, end_index)
+
         start_time = time.time()
+
         for i in range(start_index, end_index + 1):
             self.process_get('./test_data/ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG', 'ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG')
             local_filename = 'ILSVRC2012_val_' + str(i).zfill(8) + '.JPEG'
@@ -551,7 +552,7 @@ class FServer(server.Node):
             transformed_img = data_transforms(img)
             batch_img = torch.unsqueeze(transformed_img, 0)
             
-            if(MACHINE_NUM < 6):
+            if(model == 1):
                 self.model1.eval()
                 output = self.model1(batch_img)
                 mystr += np.array2string(output.detach().numpy())
@@ -565,7 +566,10 @@ class FServer(server.Node):
         f = open("testcheck", "w")
         f.write(mystr)
         f.close()
-        self.process_put("testcheck", 'VM' + str(MACHINE_NUM) + "start_index" + str(start_index) + "end_index" + str(end_index))
+        if model == 1:
+            self.process_put("testcheck", "x_" + str(start_index) + "_" + str(end_index))
+        else:
+            self.process_put("testcheck", "y_" + str(start_index) + "_" + str(end_index))
 
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.sendto(json.dumps({'command_type': 'query_time', 'query_time': total_time, "end_time" : end_time, "model" : model}).encode(), (self.coordinator_ip, self.coordinator_port))
@@ -604,7 +608,6 @@ class FServer(server.Node):
             elif parsed_command[0] == 'set_batch_size':
                 model_to_change = parsed_command[1]
                 new_batch_size = parsed_command[2]
-                print("here")
                 
                 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
                     s.sendto(json.dumps({'command_type': 'set_batch_size', 'model_to_change': model_to_change, 'new_batch_size':new_batch_size}).encode(), (self.coordinator_ip, self.coordinator_port))

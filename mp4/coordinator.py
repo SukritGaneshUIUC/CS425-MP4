@@ -21,13 +21,13 @@ import torch
 MASTER_PORT = 20086
 FILE_PORT = 10086
 GET_ADDR_PORT = 10087
-total_job = 50
+total_job = 500
 COORDINATOR_PORT = 10088
 ML_PORT = 10089
 
 # default hyperparameters
-model1_batch_size = 1
-model2_batch_size = 1
+model1_batch_size = 4
+model2_batch_size = 4
 
 # use zfill(2) for adding vm number
 vm_leg_1 = 'fa22-cs425-88' 
@@ -145,32 +145,31 @@ class Coordinator:
                     print('average query time:', np.mean(self.model_1_query_times))
                     print('std dev query time:', np.std(self.model_1_query_times))
                     print('median query time:', np.median(self.model_1_query_times))
-                    print('90th, 95th, 99th percentile query time:', np.pecentile(self.model_1_query_times, (90, 95, 99)))
+                    print('90th, 95th, 99th percentile query time:', np.percentile(self.model_1_query_times, (90, 95, 99)))
 
                     print('job 2 query time stats:')
                     print('queries processed so far:', len(self.model_2_query_times))
-                    print('average query time:', np.mean(self.model_2_query_times))
-                    print('std dev query time:', np.std(self.model_2_query_times))
-                    print('median query time:', np.median(self.model_2_query_times))
-                    print('90th, 95th, 99th percentile query time:', np.pecentile(self.model_2_query_times, (90, 95, 99)))
+                    if len(self.model_2_query_times) != 0:
+                        print('average query time:', np.mean(self.model_2_query_times))
+                        print('std dev query time:', np.std(self.model_2_query_times))
+                        print('median query time:', np.median(self.model_2_query_times))
+                        print('90th, 95th, 99th percentile query time:', np.percentile(self.model_2_query_times, (90, 95, 99)))
 
                     # query rate stats
                     curr = time.time()
                     index_one = 0
-                    for time in self.model_1_query_endtimes:
-                        if time - curr < 10:
+                    for t in self.model_1_query_endtimes[::-1]:
+                        if curr - t < 10:
                             index_one += 1
                     print("Average query rate for job 1: ", index_one/10.0)
                     index_two = 0
-                    for time in self.model_2_query_endtimes:
-                        if time - curr < 10:
+                    for t in self.model_2_query_endtimes[::-1]:
+                        if curr - t < 10:
                             index_two += 1
-                    print("Average query rate for job2: ", index_two/10.0)
+                    print("Average query rate for job 2: ", index_two/10.0)
                     
                             
                     
-
-                   
 
                     self.statistics_lock.release()
                
