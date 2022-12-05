@@ -588,9 +588,9 @@ class FServer(server.Node):
                 if command_type == 'start_query':
                     start_index = int(decoded_command['start_index'])
                     if decoded_command['repeat'] == 'yes':
-                        print("inside" + start_index)
+                        print("inside" + str(start_index))
                     if decoded_command['repeat'] == 'no':
-                        print("before" + start_index)
+                        print("before" + str(start_index))
                     end_index = int(decoded_command['end_index'])
                     model = int(decoded_command['model'])
                     
